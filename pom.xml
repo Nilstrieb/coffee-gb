@@ -52,7 +52,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>eu.rekawek.coffeegb.gui.Main</mainClass>
+              <mainClass>eu.rekawek.coffeegb.gui.EmulatorMain</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -118,7 +118,20 @@
       <version>4.12</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>net.dv8tion</groupId>
+      <artifactId>JDA</artifactId>
+      <version>4.2.0_168</version>
+    </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>jcenter</id>
+      <name>jcenter-bintray</name>
+      <url>https://jcenter.bintray.com</url>
+    </repository>
+  </repositories>
 
   <distributionManagement>
     <snapshotRepository>

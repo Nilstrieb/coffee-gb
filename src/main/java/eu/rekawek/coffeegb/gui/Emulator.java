@@ -29,9 +29,9 @@ public class Emulator {
 
     private final AudioSystemSoundOutput sound;
 
-    private final SwingDisplay display;
+    private final Display display;
 
-    private final SwingController controller;
+    private final Controller controller;
 
     private final SerialEndpoint serialEndpoint;
 
@@ -43,7 +43,10 @@ public class Emulator {
 
     private JFrame mainWindow;
 
-    public Emulator(String[] args, Properties properties) throws IOException {
+    public Emulator(String[] args, Properties properties, Display dis, Controller con) throws IOException {
+
+        System.out.println("emulator created");
+
         options = parseArgs(args);
         rom = new Cartridge(options);
         speedMode = new SpeedMode();
@@ -53,16 +56,18 @@ public class Emulator {
 
         if (options.isHeadless()) {
             sound = null;
-            display = null;
-            controller = null;
+            this.display = dis;
+            this.controller = con;
             gameboy = new Gameboy(options, rom, Display.NULL_DISPLAY, Controller.NULL_CONTROLLER, SoundOutput.NULL_OUTPUT, serialEndpoint, console);
         } else {
             sound = new AudioSystemSoundOutput();
-            display = new SwingDisplay(SCALE);
-            controller = new SwingController(properties);
+            this.display = dis == null ? new SwingDisplay(SCALE) : dis;
+            this.controller = con == null ? new SwingController(properties) : con;
             gameboy = new Gameboy(options, rom, display, controller, sound, serialEndpoint, console);
         }
+
         console.ifPresent(c -> c.init(gameboy));
+
     }
 
     private static GameboyOptions parseArgs(String[] args) {
@@ -73,7 +78,7 @@ public class Emulator {
         }
         try {
             return createGameboyOptions(args);
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
             System.err.println();
             GameboyOptions.printUsage(System.err);
@@ -112,30 +117,38 @@ public class Emulator {
             System.setProperty("sun.java2d.opengl", "true");
 
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            SwingUtilities.invokeLater(() -> startGui());
+
+            if (display instanceof SwingDisplay && controller instanceof SwingController) {
+                SwingUtilities.invokeLater(() -> startGui());
+            } else {
+                gameboy.run();
+            }
         }
     }
 
     private void startGui() {
-        display.setPreferredSize(new Dimension(160 * SCALE, 144 * SCALE));
+
+        ((SwingDisplay) display).setPreferredSize(new Dimension(160 * SCALE, 144 * SCALE));
+
 
         mainWindow = new JFrame("Coffee GB: " + rom.getTitle());
         mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         mainWindow.setLocationRelativeTo(null);
 
-        mainWindow.setContentPane(display);
+        mainWindow.setContentPane((SwingDisplay) display);
         mainWindow.setResizable(false);
         mainWindow.setVisible(true);
         mainWindow.pack();
 
-        mainWindow.addKeyListener(controller);
+        mainWindow.addKeyListener((SwingController) controller);
 
-        new Thread(display).start();
+
+        new Thread((SwingDisplay) display).start();
         new Thread(gameboy).start();
     }
 
     private void stopGui() {
-        display.stop();
+        ((SwingDisplay) display).stop();
         gameboy.stop();
         mainWindow.dispose();
     }

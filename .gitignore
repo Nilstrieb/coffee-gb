@@ -2,3 +2,5 @@ target
 .idea
 *.iml
 games
+*.gb
+Secrets.java
