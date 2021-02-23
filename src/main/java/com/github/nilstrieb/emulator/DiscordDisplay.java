@@ -11,13 +11,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DiscordDisplay implements Display {
 
     private final TextChannel channel;
     private final Message message;
-
 
     public static final int DISPLAY_WIDTH = 160;
     public static final int DISPLAY_HEIGHT = 144;
@@ -30,9 +28,6 @@ public class DiscordDisplay implements Display {
     private int i;
 
     private int frameCounter = 0;
-
-    private AtomicBoolean sending = new AtomicBoolean(false);
-
 
     public DiscordDisplay(TextChannel channel) {
         EmbedBuilder builder = new EmbedBuilder();
@@ -47,6 +42,7 @@ public class DiscordDisplay implements Display {
 
         rgb = new int[DISPLAY_WIDTH * DISPLAY_HEIGHT];
         img = gfxConfig.createCompatibleImage(DISPLAY_WIDTH, DISPLAY_HEIGHT);
+
     }
 
     @Override
@@ -68,9 +64,9 @@ public class DiscordDisplay implements Display {
 
         if (frameCounter % 60 == 0) {
             Runnable runnable = () -> {
-                sending.set(true);
                 try {
                     ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                    int frame = frameCounter;
                     ImageIO.write(img, "png", bytes);
                     bytes.flush();
 
@@ -84,31 +80,30 @@ public class DiscordDisplay implements Display {
 
                     EmbedBuilder builder = new EmbedBuilder();
                     builder.setTitle("Pokemon Red")
-                            .setFooter("Frame " + frameCounter)
+                            .setFooter("Frame " + frame)
                             .setImage(frameUrl);
 
                     message.editMessage(builder.build()).queue();
-
-                    //channel.sendMessage(builder.build()).addFile(bytes.toByteArray(), "img.png").queue(m -> System.out.println("sent img"));
 
                     bytes.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             };
-            CompletableFuture.runAsync(runnable).thenRun(() -> sending.set(false));
+            runnable.run();
+            //CompletableFuture.runAsync(runnable);
         }
     }
 
     @Override
     public synchronized void waitForRefresh() {
-        while (sending.get()) {
+        /*while (sending.get()) {
             try {
                 wait(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
     }
 
     @Override

@@ -12,6 +12,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class DiscordController implements Controller, ChannelListener {
 
@@ -46,20 +47,18 @@ public class DiscordController implements Controller, ChannelListener {
     public void messageReceived(MessageReceivedEvent event) {
         String text = event.getMessage().getContentRaw().trim();
 
-        if (inputMap.containsKey(text)){
+        if (inputMap.containsKey(text)) {
             Button button = inputMap.get(text);
             listener.onButtonPress(button);
             System.out.println("Press: " + button);
-            CompletableFuture.runAsync(() -> {
-                try {
-                    wait(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                listener.onButtonRelease(button);
-            });
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            listener.onButtonRelease(button);
         } else {
-            event.getTextChannel().sendMessage("Unkown key").queue();
+            event.getTextChannel().sendMessage("Unkown key").queue(msg -> msg.delete().queueAfter(1, TimeUnit.SECONDS));
         }
 
         event.getMessage().delete().queue();
