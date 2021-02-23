@@ -3,4 +3,5 @@ target
 *.iml
 games
 *.gb
-Secrets.java
+Secrets.jav
+git rm
