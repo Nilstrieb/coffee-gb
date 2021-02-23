@@ -23,7 +23,7 @@ public class BotMain {
     public static void main(String[] args) throws LoginException {
         JDABuilder builder = JDABuilder.createDefault(Secrets.TOKEN);
         builder.setCompression(Compression.ZLIB)
-                .setActivity(Activity.watching("over Gon"))
+                .setActivity(Activity.playing("Pokemon Red Edition"))
                 .disableIntents(GatewayIntent.GUILD_BANS,
                         GatewayIntent.GUILD_EMOJIS,
                         GatewayIntent.GUILD_INVITES,

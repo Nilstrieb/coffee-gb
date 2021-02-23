@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class DiscordDisplay implements Display {
 
@@ -70,11 +71,13 @@ public class DiscordDisplay implements Display {
                     ImageIO.write(img, "png", bytes);
                     bytes.flush();
 
-                    String frameUrl = message.getJDA().getGuildById(459006129670979584L)
+                    Message msg = message.getJDA().getGuildById(459006129670979584L)
                             .getTextChannelById(813778460988014612L)
                             .sendFile(bytes.toByteArray(), "img.png")
-                            .complete()
-                            .getAttachments()
+                            .complete();
+
+                    msg.delete().queueAfter(30, TimeUnit.SECONDS);
+                    String frameUrl = msg.getAttachments()
                             .get(0)
                             .getUrl();
 
@@ -90,8 +93,8 @@ public class DiscordDisplay implements Display {
                     e.printStackTrace();
                 }
             };
-            runnable.run();
-            //CompletableFuture.runAsync(runnable);
+            runnable.run(); //sync
+            //CompletableFuture.runAsync(runnable); //async
         }
     }
 

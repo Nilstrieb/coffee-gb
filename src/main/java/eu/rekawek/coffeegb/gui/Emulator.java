@@ -67,7 +67,6 @@ public class Emulator {
         }
 
         console.ifPresent(c -> c.init(gameboy));
-
     }
 
     private static GameboyOptions parseArgs(String[] args) {
